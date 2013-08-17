@@ -1,4 +1,12 @@
-Collaboration
-=============
+Collaboation
+============
 
-A simple framework for parallel Computing
+A first drop of the Collaboration Package
+
+
+Installation
+============
+
+
+Examples
+========
