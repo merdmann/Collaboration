@@ -2,7 +2,7 @@ with "../../collaboration.gpr";
 
 project Particles is
 
-   for Source_Dirs use ("src");
+   for Source_Dirs use ("src", "common");
    for Object_Dir use "./build";
    for Exec_Dir use "./bin";
    for Main use ("particle.adb");

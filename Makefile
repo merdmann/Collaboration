@@ -31,17 +31,19 @@ $(ws):
 	rm -rf $(ws)
 	mkdir -p $(ws)
 
-dist : disclean $(ws)
+dist : distclean $(ws)
 	cp -a * $(ws)
-	( cd $(ws)/../ && tar cvf $(home)/$(dist)-src.tar --exclude-vcs $(dist) )
+	( cd $(ws)/../ && tar cvf $(home)/$(dist)-src.tar --exclude=\*release\* --exclude-vcs $(dist) )
 	rm -rf $(ws)
 	gzip $(dist)-src.tar
 
 ## cleanup
 clean distclean :: 
 	$(MAKE) -C./linux $@
+	$(MAKE) -C./examples/particles $@
 
-clean :: 
+
+clean :: dirs 
 	gnatclean -r -P./collaboration.gpr
 	rm -rf $(dist)
 

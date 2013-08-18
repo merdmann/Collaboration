@@ -9,5 +9,5 @@ Init_Mode=Random;		##Initialize
 Unit=1000.00;    		## all particles are placed within this cubus 
 M0=1000.0;
 MMAX=6;		
-Worker=_W_;
+Workers=_W_;
 

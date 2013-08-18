@@ -90,8 +90,8 @@ http://wiki.lyx.org/Examples/AcmSigplan
 \end_layout
 
 \begin_layout Title
-An easy to resusable Ada Pattern for utilizing Multicore CPU's for simple
- Computation Tasks 
+An Easy to Reuse Ada Pattern for utilizing Multicore CPU's for simple Computatio
+n Tasks 
 \begin_inset Foot
 status open
 
@@ -191,12 +191,13 @@ Introduction
 \end_layout
 
 \begin_layout Standard
-In order of being easy to use any API should be build on a well known metaphor.
+In order for an API being easy to use, it should be build on a well known
+ metaphor.
  The Collaboration package presented here provides an API which allows the
  easy utilization of Multicore CPU's since it is based on the commonly known
  model of a group of workers.
  Each worker is working independent of others on some part of the final
- product which is going to be assembled after all parts are produced.
+ product which is assembled after all parts are produced.
 \end_layout
 
 \begin_layout Standard
@@ -319,7 +320,7 @@ status open
 \begin_layout Plain Layout
 \begin_inset Graphics
 	filename Colaboration_Usecase.png
-	scale 60
+	scale 50
 	clip
 
 \end_inset
@@ -1171,7 +1172,7 @@ wait(W2)
 wakeup(W1)
 \emph default
  can happen in any order.
- Even thought the presenation is not correct, for time being we will continue
+ Even though the presenation is not correct, for time being we will continue
  using the presentation in order to show important features of the collaboration
  algorithm.
 \end_layout
@@ -3272,7 +3273,7 @@ reference "sec:The-Algorithm"
 
 \end_inset
 
- but only to the API which follows the collaboration metaphor.
+ but only to the API which uses the collaboration metaphor.
  Figure 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -3356,7 +3357,7 @@ declare
 
 \begin_layout Plain Layout
 
-   P : Partitioned_Workpackage.Object_Type;
+   P : Partitioned_Workpackage.Object_Type();
 \end_layout
 
 \begin_layout Plain Layout
@@ -3437,6 +3438,233 @@ name "lis:Computation-logic"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Section
+Results
+\end_layout
+
+\begin_layout Standard
+A simple example which yields quite impressive results is the simulation
+ of of the non relativistic movement of particles using newtons law of movement.
+ Assume 
+\begin_inset Formula $N$
+\end_inset
+
+ particles having the coordinates 
+\begin_inset Formula $x_{i}$
+\end_inset
+
+and momentum 
+\begin_inset Formula $m_{i}v_{i}$
+\end_inset
+
+ (where 
+\begin_inset Formula $i=1..N).$
+\end_inset
+
+ The movement of all particles can be calculated by integrating the equation
+ below for given initial conditions 
+\begin_inset Formula $x_{i}(0)$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+m_{i}\frac{dv_{i}}{dt}\mid_{x(t)}=\sum_{j=1}^{N}F(x_{i}(t),x_{j}(t))\label{eq:newton-1-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\frac{dx}{dt}=v
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the given example used for benchmarking the a Runge Kutta algorithm assuming
+ fixed time steps has been used.
+ Before integrating for each particle 
+\begin_inset Formula $i\in1..N$
+\end_inset
+
+ the interaction with all other particles has to be calculated.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:central"
+
+\end_inset
+
+ shows the 
+\begin_inset Formula $X$
+\end_inset
+
+ velocity of a particles with mass 
+\begin_inset Formula $M_{1}$
+\end_inset
+
+ moving along the 
+\begin_inset Formula $X$
+\end_inset
+
+ axis and colliding with a mass 
+\begin_inset Formula $M_{2}$
+\end_inset
+
+ where 
+\begin_inset Formula $M_{2}\ggg M_{1}$
+\end_inset
+
+.
+ The initial velocity 
+\begin_inset Formula $v_{x}$
+\end_inset
+
+ of the particle is constant until the collision happens.
+ After the collision the particle moves with 
+\begin_inset Formula $-v_{x}$
+\end_inset
+
+ which resembles the fact of impuls conservation.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement t
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename central.png
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:central"
+
+\end_inset
+
+In ordrr 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The calculation time of the interaction depends on 
+\begin_inset Formula $N^{2}$
+\end_inset
+
+ and the integration time on 
+\begin_inset Formula $N.$
+\end_inset
+
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:speedup"
+
+\end_inset
+
+ shows the execution time for different number of particles.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename speedup.png
+	scale 55
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:speedup"
+
+\end_inset
+
+This figure shoes the execution time of the integration of the equation
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:newton-1-1"
+
+\end_inset
+
+ depending on the number of particles and the number of worker processes.
+ The green line represents the sequential execution.
+ The gray line is an proximiation to the execution time of the sequential
+ algorithm using 
+\begin_inset Formula $C\, log(N^{2})$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+One can see that the quadratic dependency is demonating for large number
+ of particles.
+ Interestingly there is a point where the exection time starts to deviate
+ from the 
+\begin_inset Formula $N^{2}$
+\end_inset
+
+rule.
 \end_layout
 
 \begin_layout Section

@@ -1,0 +1,13 @@
+[LIBRARY PATH]
+/home/merdmann/Projects/Collaboration/lib/libcollaboration.a
+[OBJECT FILES]
+/home/merdmann/Projects/Collaboration/build/set_scheduling.o
+20130818092407
+/home/merdmann/Projects/Collaboration/build/scheduling.o
+20130818092407
+/home/merdmann/Projects/Collaboration/build/collaboration.o
+20130818092408
+/home/merdmann/Projects/Collaboration/build/partitioned_workpackage.o
+20130818092408
+/home/merdmann/Projects/Collaboration/build/partitioned_data.o
+20130818092408
