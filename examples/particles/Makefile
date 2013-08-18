@@ -14,15 +14,14 @@ dirs : ./build ./bin $(resultdir)
 	mkdir -p $@
 
 ## simulate a central collision
-central :: $(resultdir) 
-	./run.sh --root=$(wd) --config=central |grep "P " > $(stdout)
-	./clean.sh $(stdout) 1
-	./clean.sh $(stdout) 2
+run : $(resultdir) 
+	./run.sh --root=$(wd) --config=$(config)
 
+noncentral central:
+	$(MAKE) run config=$@
 
-clean : ./build
+clean : dirs
 	gnatclean -r -P./particles.gpr
 
 distclean : clean 
 	rm -rf ./build ./bin ./test *.log 
-	$(MAKE) -C../../ distclean

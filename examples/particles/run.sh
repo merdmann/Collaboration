@@ -23,12 +23,20 @@
 # MA 02111-1307, USA.                                                     
 #
 #
+
 tmp=/tmp/run.$$
 trap 'rm -f "${tmp}" >/dev/null 2>&1' 0
 trap "exit 2" 1 2 3 15
 
 root=`pwd` 
 config=""
+
+## convert to paraview format
+topv() {
+( echo "P,T,M,X,Y,Z,VX,VY,VZ"
+  fgrep -v /usr/bin/time $1 | fgrep "P $2" | tr -d 'P' | tr ';' ',' ) > $1-$2.txt
+}
+
 
 for i in $* ; do
    case "$1" in
@@ -60,10 +68,14 @@ done
 wd=${root}/test
 mkdir -p ${wd}
 
-log=${wd}/${config}.log 
+log=${wd}/${config}.log
+stdout=${config}.data
+ 
 cp ${config}.cfg ${wd}
 cp ./bin/particle ${wd} 
 
 cd ${wd} 
-./particle ${config} ${log} ${with} 
+./particle ${config} ${log} ${with} |grep "P " > ${stdout}
+topv ${stdout} 1
+topv ${stdout} 2
 pwd
