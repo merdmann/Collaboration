@@ -27,20 +27,26 @@ with Ada.Finalization;        use Ada.Finalization;
 with Unchecked_Deallocation;
 
 package Partitioned_Data is
+
    -- From this type the context for all partitioned computations
-   -- is to be derived.
+   -- is to be derived. N SPecifies the max number of partitions to
+   -- be procesed.
    type Object_Type(N : Positive ) is abstract new Controlled with private;
    type Handle is access all Object_Type'Class;
 
-   -- Split the working data set into Nbr partitions
+   -- Split the working data set into Nbr partitions. The default implementation
+   -- simply set the partition counter to 1.
    procedure Partitioning( This : in out Object_Type; Nbr : in Natural );
 
    -- compute the result for a given partition
    procedure Compute( This : in out Object_Type; Partition : in Natural ) is abstract;
 
-   -- fetch the work package (partition) return a partition number
+   -- fetch the work package (partition) return a partition number. If not
+   -- provided by the application this returns the next partition.
    function Fetch( This : in Object_Type) return Natural;
 
+   -- If fetch exceeds the range of avaiable partitions this value will be
+   -- returned. All sucessive calls to Fetch returning the same value.
    Last_Partition : constant Natural := 0;
 
    -- combine the computing results of all partitions

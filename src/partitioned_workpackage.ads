@@ -33,7 +33,7 @@ package Partitioned_Workpackage is
 
    type Object_Type( Partitions : Natural ) is new Controlled with private;
 
-   -- execute a single several partitions
+   -- Iterate Nbr_Of_Iterations on the Partintioned_Data set.
    procedure Compute(
       This: in out Object_Type;
       Ctx : in Partitioned_Data.Handle;

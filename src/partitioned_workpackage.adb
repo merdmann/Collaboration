@@ -24,6 +24,7 @@
 --  covered by the  GNU Public License.
 --
 with Ada.Text_IO;          	use Ada.Text_IO;
+with Ada.Exceptions;		use Ada.Exceptions;
 with Unchecked_Deallocation;
 
 with Collaboration;              	use Collaboration;
@@ -70,7 +71,6 @@ package body Partitioned_Workpackage is
    task body Computing_Task is
       B       : Collaboration.Object_Type renames Data.B;
       Current : Partitioned_Data.Handle renames Data.Current;
-      P       : Natural := 0;
       RC      : Integer;
    begin
       RC := Set_Scheduling( Sched_BATCH );
@@ -79,20 +79,26 @@ package body Partitioned_Workpackage is
          Join(B);
 
          loop
-            P := Fetch( Current.all );
-            exit when P = Last_Partition;
+            declare
+               P : Natural := Fetch( Current.all) ;
+            begin
+               exit when P = Last_Partition;
 
-            Start_Lap( T_Processing );
-            Compute( Current.all, P );
-            Stop_Lap( T_Processing );
+               Start_Lap( T_Processing );
+               Compute( Current.all, P );
+               Stop_Lap( T_Processing );
+            end;
          end loop;
       end loop;
+
    exception
       when Termination =>
          Trace(B, "Terminated");
 
-     when Others =>
-         Trace(B,"Exception");
+       when E : others =>
+         Trace(B, "Exception " & Exception_Name( E )
+               & ":" &  Exception_Message( E )
+               & " in worker " & CPU_Range'Image(Id) );
    end;
 
    ----------------
