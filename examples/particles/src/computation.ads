@@ -22,13 +22,18 @@
 --  covered  by the  GNU  General  Public  License.  This exception does not
 --  however invalidate  any other reasons why  the executable file  might be
 --  covered by the  GNU Public License.
+--
+--  For more details please consult the README file
+--
 with Partitioned_Data;        use Partitioned_Data;
 with Vector_Space;            use Vector_Space;
 with Types;                   use Types;
 
 package Computation is
-
-  type Object_Type is new Partitioned_Data.Object_Type with record
+   -----------------
+   -- Object_Type --
+   -----------------
+   type Object_Type is new Partitioned_Data.Object_Type with record
       PZ : Natural := 0;
       X1 : State_Vector_Access := null;
       X2 : State_Vector_Access := null;
@@ -36,7 +41,7 @@ package Computation is
 
    type Handle is access all Object_Type;
 
-   procedure Compute( This : in out Object_Type; Partition : in Natural );
+   procedure Compute( This : in out Object_Type; I : in Natural );
    procedure Combine( This : in out Object_Type );
 
 end Computation;

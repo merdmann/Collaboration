@@ -44,7 +44,7 @@ package body Computation is
    -------------
    -- Compute --
    -------------
-   procedure Compute( This : in out Object_Type; Partition : in Natural ) is
+   procedure Compute( This : in out Object_Type; I : in Natural ) is
       X1   : State_Vector_Access renames This.X1;
       X2   : State_Vector_Access renames This.X2;
 
@@ -55,61 +55,57 @@ package body Computation is
              "M=" & Value_Type'Image( State.Mass ) & " ]" ;
       end To_String;
 
-      procedure Compute_Particle( I : in Natural ) is
-         -----------
-         -- Force --
-         -----------
-     	function Force( I,J : in Integer ) return Vector_Type is
-            DX : constant Vector_Type := X1(J).X - X1(I).X;
-            R  : constant Value_Type := Norm(DX);
-            G0 : constant Value_Type := 6.67428E-11;
-            F  : constant Value_Type := G0 * X1(I).Mass * X1(J).Mass/R**2;
-         begin
-            return (F - exp(-R**2/(2.0*RS**2)))*DX;
-         exception
-            when E : others =>
-               Log.Error("Exception while calculating force *** " & Exception_Name( E ) & " " &
+      -----------
+      -- Force --
+      -----------
+      function Force( J : in Integer ) return Vector_Type is
+         -- interaction between particle I anf J
+         DX : constant Vector_Type := X1(J).X - X1(I).X;
+         R  : constant Value_Type := Norm(DX);
+         G0 : constant Value_Type := 6.67428E-11;
+         F  : constant Value_Type := G0 * X1(I).Mass * X1(J).Mass/R**2;
+      begin
+         return (F - exp(-R**2/(2.0*RS**2)))*DX;
+      exception
+         when E : others =>
+            Log.Error("Exception while calculating force *** " & Exception_Name( E ) & " " &
                          Exception_Message( E ) & " : " &
                          "X1=" & To_String( X1(I) ) & ", " &
                          "X2=" & To_String( X1(J) ) & ", " &
                          "DX=" & To_String( DX ) & ", " &
                          "RS=" & Value_Type'Image( RS ) &
                          Integer'Image(I) & "/" & Integer'Image(J));
-               raise;
-         end Force;
-
-         DV : Vector_Type;
-         DX : Vector_Type;
-         K  : Vector_Type := Null_Vector;
-
-      begin
-         Pragma Debug( Start_Lap( T_Integration ) );
-
-         for J in 1..N loop
-            if I /= J then
-               K := K + Force(I,J);
-            end if;
-         end loop;
-
-         DV := ( DT / X1(I).Mass) * K;
-         X2(I).V := X1(I).V + DV;
-
-         DX := DT * X2(I).V + DT**2 / ( 2.0 * X1(I).Mass)* K;
-         X2(I).X := X1(I).X + DX;
-         X2(I).Mass := X1(I).Mass;
-
-         Pragma Debug( Stop_Lap( T_Integration ) );
-
-      exception
-         when E : others =>
-            Log.Error("Exception while processing vector *** " & Exception_Name( E ) & ":" &
-                      Exception_Message( E ) & " for element" & Natural'Image(I) &
-                      " " & To_String( X1(I) ) );
             raise;
-      end Compute_Particle;
+      end Force;
+
+      DV : Vector_Type;
+      DX : Vector_Type;
+      K  : Vector_Type := Null_Vector;
 
    begin
-      Compute_Particle(Partition);
+      Pragma Debug( Start_Lap( T_Integration ) );
+
+      for J in 1..N loop
+         if I /= J then
+            K := K + Force(J);
+         end if;
+      end loop;
+
+      DV := ( DT / X1(I).Mass) * K;
+      X2(I).V := X1(I).V + DV;
+
+      DX := DT * X2(I).V + DT**2 / ( 2.0 * X1(I).Mass)* K;
+      X2(I).X := X1(I).X + DX;
+      X2(I).Mass := X1(I).Mass;
+
+      Pragma Debug( Stop_Lap( T_Integration ) );
+
+   exception
+      when E : others =>
+         Log.Error("Exception while processing vector *** " & Exception_Name( E ) & ":" &
+                   Exception_Message( E ) & " for element" & Natural'Image(I) &
+                   " " & To_String( X1(I) ) );
+         raise;
    end Compute;
 
    -------------
