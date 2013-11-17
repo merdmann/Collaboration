@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 # ************************************************************************ --
 # *****           P A R T I C L E  S I M U L A T O R  (PSim)         ***** --
 # *****               FOR  CLASSICAL PARTICLES                       ***** --
@@ -68,14 +68,14 @@ done
 wd=${root}/test
 mkdir -p ${wd}
 
-log=${wd}/${config}.log
+log=${config}.log
 stdout=${config}.data
  
 cp ${config}.cfg ${wd}
 cp ./bin/particle ${wd} 
 
 cd ${wd} 
-./particle ${config} ${log} ${with} |grep "P " > ${stdout}
+./particle ${config} ${log} ${with} | grep "P " | tee ${stdout}
 topv ${stdout} 1
 topv ${stdout} 2
 pwd

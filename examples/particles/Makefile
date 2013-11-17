@@ -1,5 +1,5 @@
 PATH:=/opt/gnat/bin:${PATH}
-libs=-L../../lib -lmachdep
+#libs=-L../../lib -lmachdep
 stdout=./central.log
 wd=$(shell pwd)
 config=central

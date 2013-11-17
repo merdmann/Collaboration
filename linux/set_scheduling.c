@@ -4,6 +4,7 @@
  *  Created on: Jul 11, 2012
  *      Author: merdmann
  */
+#ifdef Linux
 #include <stdio.h>
 #include <sched.h>
 #include <stdlib.h>
@@ -25,3 +26,9 @@ int set_scheduling( int policy ) {
 
   	return 0;
 }
+#else
+int set_scheduling( int policy ) {
+	return 0;
+}
+#endif
+	

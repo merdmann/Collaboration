@@ -1,10 +1,16 @@
 PATH:=/opt/gnat/bin:${PATH}
+SHELL:=bash
 
 tmp=/tmp
 dist=collaboration-1.0.1
 home=$(shell pwd)
 os=$(shell uname)
 ws=$(tmp)/$(dist)
+
+
+CP=cp
+RM=rm -rf
+MKDIR=mkdir -p
 
 ## default target
 all : dirs machdeps library 
@@ -13,12 +19,15 @@ all : dirs machdeps library
 dirs : ./lib ./build
 
 ./lib ./build :
-	mkdir -p $@
+	$(MKDIR) $@
 
 ## build the operating system dep parts
 machdeps : $(os)
 
 Linux:
+	$(MAKE) -DLinux -C./linux
+
+CYGWIN_NT-6.2 Windows_NT :
 	$(MAKE) -C./linux
 
 ## the actual library
@@ -28,13 +37,13 @@ library :
 
 ## build distribution
 $(ws):
-	rm -rf $(ws)
-	mkdir -p $(ws)
+	$(RM) $(ws)
+	$(MKDIR) $(ws)
 
 dist : distclean $(ws)
-	cp -a * $(ws)
+	$(CP) -a * $(ws)
 	( cd $(ws)/../ && tar cvf $(home)/$(dist)-src.tar --exclude=\*release\* --exclude-vcs $(dist) )
-	rm -rf $(ws)
+	$(RM) $(ws)
 	gzip $(dist)-src.tar
 
 ## cleanup
@@ -45,8 +54,8 @@ clean distclean ::
 
 clean :: dirs 
 	gnatclean -r -P./collaboration.gpr
-	rm -rf $(dist)
+	$(RM) $(dist)
 
 distclean :: clean 
-	rm -rf ./lib ./build
+	$(RM) ./lib ./build
 	find . -name fontconfig | tee | xargs rm -rf 
