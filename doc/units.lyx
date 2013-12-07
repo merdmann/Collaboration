@@ -1,0 +1,3858 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass sigplanconf
+\options natbib
+\use_default_options false
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding default
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\float_placement tbh
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 0
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 2
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+This is a template LyX file for articles to be submitted to the Special
+ Interest Group on Programming Languages  (SIGPLAN).
+ How to install the SIGPLAN LaTeX class to your LaTeX system is explained
+ in 
+\begin_inset Flex URL
+status open
+
+\begin_layout Plain Layout
+
+http://wiki.lyx.org/Examples/AcmSigplan
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Title
+An Easy to Reuse Ada Pattern for utilizing Multicore CPU's for simple Computatio
+n Tasks 
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+This work is an open source project called Collaboration.
+ The source code can be found at at git@github.com:merdmann/Collaboation.git.
+ The Project page at http://michaelslab-diary.blogspot.de/2013/06/refactoring-of-p
+sim.html.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subtitle
+Code is not enougth
+\end_layout
+
+\begin_layout Author
+Michael Erdmann 
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+At least one autor is required.
+ The Author field expects 3 infos that are separated by 
+\begin_inset Quotes eld
+\end_inset
+
+
+\series bold
+}{
+\series default
+
+\begin_inset Quotes erd
+\end_inset
+
+ in TeX code.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Author
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}{
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+}{
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Abstract
+This paper provides a simple abstraction which is inteded to make the actual
+ computaional code independant of scaling parameters and by this to improve
+ the maintanability of the application code.
+ Since tested code is not enougth any more the article provides the formal
+ verification of the algorithm.
+\end_layout
+
+\begin_layout Terms
+Algorithms, Performance, Design
+\end_layout
+
+\begin_layout Keywords
+Multi Core Architecture, Ada 2012, Liniar Temporal Logic, Computational
+ Temporal Logic
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Introduction"
+
+\end_inset
+
+Introduction
+\end_layout
+
+\begin_layout Standard
+In order for an API being easy to use, it should be build on a few well
+ known metaphors.
+ The Collaboration package presented here provides an API which allows the
+ developer the application of multiple tasks based on the well known model
+ of a group of workers working in parallel on a given task.
+ Each worker is working independent of others on some part of the final
+ product until he is finished.
+ After all subresults are finished the final result assembled.
+\end_layout
+
+\begin_layout Standard
+Even thought the concept of such a collaboration is applicable to a broader
+ range of problems we address a specific class of problems.
+ Lets assume a recursive computation which is expected to yield for an given
+ 
+\begin_inset Formula $x_{o}$
+\end_inset
+
+ and an given 
+\begin_inset Formula $m\in\mathbb{N}$
+\end_inset
+
+ a result using
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+x_{t+1}=H(x_{t})\;(t\in0..m)\label{eq:recursion}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with 
+\begin_inset Formula $H:M^{n}\rightarrow M^{n}$
+\end_inset
+
+.
+ A speedup of the computation can be achieved if it is possible to compute
+ 
+\begin_inset Formula $P$
+\end_inset
+
+ subspaces 
+\begin_inset Formula $M_{j}$
+\end_inset
+
+ of 
+\begin_inset Formula $M^{n}$
+\end_inset
+
+ in parallel 
+\begin_inset Formula $H_{j}=H\upharpoonleft M_{j}\;(j=1..P)$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The developer has to provide a calculation recipe 
+\begin_inset Formula $(\text{\left\{  M_{j}\right\}  , H)}$
+\end_inset
+
+ for 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:recursion"
+
+\end_inset
+
+ which is being processed by the collaboration of workers.
+ The recipe consist of the function 
+\begin_inset Formula $H$
+\end_inset
+
+ and the algorithm which defines the 
+\begin_inset Formula $M_{j}$
+\end_inset
+
+ which we will call partitions in the following.
+ 
+\end_layout
+
+\begin_layout Standard
+The proposed API is based on the metaphor of a team of worker (Fig.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Collaboration-Model"
+
+\end_inset
+
+), called a collaboration, sharing the work among them.
+ Initially a collaboration is empty and as much worker as needed can join
+ the collaboration.
+ If there is no work available, whch means no computation recipe has been
+ provided, the worker will wait until some work becomes available.
+ The so called client will submit a recipe to the collaboration for processing.
+ A recipe specifies the calculation formula and the algorithm to calculate
+ the partition 
+\begin_inset Formula $M_{j}$
+\end_inset
+
+ for 
+\begin_inset Formula $j\in\mathbb{N}$
+\end_inset
+
+.
+ All workers will start processing by taking a work package in form of a
+ partition until no more work is available any more.
+ In order to collect the execution result the client has to join the team
+ and assemble the results after all workers are done.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Colaboration_Usecase.png
+	scale 50
+	clip
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Collaboration-Model"
+
+\end_inset
+
+The Collaboration Model is based in the idea that some client passes a recipe
+ to a team of workers.
+ Each worker takes a work package until no more packages are available and
+ applies the recipe.
+ The client joins the team and waits until the work packages have been processed.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+The API
+\end_layout
+
+\begin_layout Standard
+The Collaboration API follows the same model; a worker task needs to join
+ a collaboration by calling the 
+\emph on
+Join 
+\emph default
+method (Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Collaboration-API"
+
+\end_inset
+
+ (1)).
+ The 
+\emph on
+Join
+\emph default
+ method will block until the computation recipe has been made available
+ to the collaboation.
+ The client will prepare the input data and calls the method 
+\emph on
+Fork
+\emph default
+ (4) to submit the recipe to the workers.
+ The client has now the option doing something different or join the Collaborati
+on by calling the Join method (5).
+ The worker will eventually wake up from the 
+\emph on
+join
+\emph default
+ and will call the 
+\emph on
+getPartition
+\emph default
+ to get the next partition id which is to be processed and calls the 
+\emph on
+Compute
+\emph default
+ method with this partition id.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+-- each worker tasks
+\end_layout
+
+\begin_layout Plain Layout
+
+   while true loop
+\end_layout
+
+\begin_layout Plain Layout
+
+      Join(This);                   (1)
+\end_layout
+
+\begin_layout Plain Layout
+
+      P := getPartition(This);      (2)
+\end_layout
+
+\begin_layout Plain Layout
+
+      Compute(This, P);             (3)
+\end_layout
+
+\begin_layout Plain Layout
+
+   end loop;
+\end_layout
+
+\begin_layout Plain Layout
+
+   ...
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+   end Worker_Task;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+-- in the main task; start the computation
+\end_layout
+
+\begin_layout Plain Layout
+
+   Fork(this)                       (4)
+\end_layout
+
+\begin_layout Plain Layout
+
+-- ..
+ do something usefull
+\end_layout
+
+\begin_layout Plain Layout
+
+   Join(this)                       (5)
+\end_layout
+
+\begin_layout Plain Layout
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Collaboration-API"
+
+\end_inset
+
+This listing shows the usage of the Collaboration API in the worker and
+ the main task.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:The-Algorithm"
+
+\end_inset
+
+The Algorithm
+\end_layout
+
+\begin_layout Standard
+The algorithm behind the 
+\begin_inset Quotes eld
+\end_inset
+
+collaboration
+\begin_inset Quotes erd
+\end_inset
+
+ metaphor described in chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Introduction"
+
+\end_inset
+
+ is depicted as step table in algorithm
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "alg:Collaboration-Algorithm"
+
+\end_inset
+
+ or further elaboration..
+ The intention of this chapter is to provide some reasoning abut the functioning
+ of the implementation depicted in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "alg:Collaboration-Algorithm"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="14" columns="3">
+<features tabularvalignment="top">
+<column alignment="left" valignment="top" width="4text%">
+<column alignment="left" valignment="top" width="18text%">
+<column alignment="left" valignment="top" width="18text%">
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Step
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Main task
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Worker 1..N
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Begin
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+State := S_Close
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Partition 
+\begin_inset Formula $X$
+\end_inset
+
+ into 
+\begin_inset Formula $M_{j}\; j=1..P$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\noun on
+Fork() begin
+\end_layout
+
+\begin_layout Plain Layout
+W0: 
+\emph on
+Wait 
+\end_layout
+
+\begin_layout Plain Layout
+State = S_Close and Count(W1)=N
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\noun on
+Join() begin
+\noun default
+ 
+\end_layout
+
+\begin_layout Plain Layout
+W1: Wait till 
+\end_layout
+
+\begin_layout Plain Layout
+State = S_Open
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\emph on
+Wakeup(W0)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\emph on
+SET
+\emph default
+ State = S_Open
+\end_layout
+
+\begin_layout Plain Layout
+
+\noun on
+end Fork
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\noun on
+Join() begin
+\end_layout
+
+\begin_layout Plain Layout
+W2: 
+\emph on
+Wait till
+\end_layout
+
+\begin_layout Plain Layout
+State = S_Close and Count=N
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\emph on
+Wakeup(W1)
+\end_layout
+
+\begin_layout Plain Layout
+if Count(W1) = 0 then State = S_Close
+\end_layout
+
+\begin_layout Plain Layout
+
+\noun on
+end Join;
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+6
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $j=nextPartition()$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+if no partition then go to step 2
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+7
+\begin_inset CommandInset label
+LatexCommand label
+name "Step7-1-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $X_{j}=H(M_{j})$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+8
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+go to step 6
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\emph on
+Wakeup(W2)
+\end_layout
+
+\begin_layout Plain Layout
+
+\noun on
+end Join()
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $X=\cup X_{j}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+11
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+go to step 0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:Collaboration-Algorithm"
+
+\end_inset
+
+Collaboration Algorithm
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Each row in algorithm 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "alg:Collaboration-Algorithm"
+
+\end_inset
+
+ is representing an execution step.
+ The columns are representing the different tasks involved in the model.
+ Each step may contain a statement which are either wait/wake up pairs or
+ general instructions.
+ Using a 
+\emph on
+wait/wakeup
+\emph default
+ construct a task 
+\begin_inset Formula $T$
+\end_inset
+
+ waits for a guard condition 
+\begin_inset Formula $C$
+\end_inset
+
+.
+ Such a task will wakeup when the guard condition becomes true.
+ In addition it is possible to query the number of tasks which are waiting
+ on a given guard condition by means of the statement
+\emph on
+ Count(C).
+ 
+\emph default
+The term 
+\emph on
+SET
+\emph default
+ indicates a place in the model where the guard condition 
+\begin_inset Formula $C$
+\end_inset
+
+ is set to true which wakes up (Wakeup) all tasks waiting on the condition
+ 
+\begin_inset Formula $C$
+\end_inset
+
+.
+ In addition it is possible to query the number of waiting tasks at any
+ point in time.
+ Each statement given in a box is expected to interrupt able at any time
+ unless this is explicitly noted.
+\end_layout
+
+\begin_layout Standard
+Interpretation of the step table shown in algorithm 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "alg:Collaboration-Algorithm"
+
+\end_inset
+
+ has to be done with certain care.
+ since there are statements in the same row for different tasks.
+ Such statemente are not executed in a reproducible order, e.g.
+ in step 5 the 
+\emph on
+wait(W2)
+\emph default
+ and 
+\emph on
+wakeup(W1)
+\emph default
+ can happen in any order.
+ Even though the presenation is some what missleading, for time being we
+ will continue using the presentation in order to show important features
+ of the collaboration algorithm.
+\end_layout
+
+\begin_layout Standard
+Lines like 
+\noun on
+Fork() begin ...
+ end Join()
+\noun default
+ indicate the API method encapsulating the corresponding statements.
+ Statements like go to are self explaining.
+\end_layout
+
+\begin_layout Standard
+The algorithm comprises of three major parts, the initialization, the processing
+ and the post processing which are executed in the same order.
+ In the following sections we will show that post conditions of each step
+ are matching the precondition of the next step there by ensurng the execution
+ of the sequence.
+\end_layout
+
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Initialization"
+
+\end_inset
+
+Initialization
+\end_layout
+
+\begin_layout Standard
+Upon start of the alogorithm the main task and the worker tasks will start
+ in any order.
+ The state variable will be set to S_Close before the execution starts.
+ 
+\end_layout
+
+\begin_layout Standard
+The worker tasks 
+\begin_inset Formula $T_{i}\;(i=1..N)$
+\end_inset
+
+ will execute till the wait with the guard condition 
+\begin_inset Formula $State=Open$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The main task will execute till 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $State=Close\wedge Count(W1)=N$
+\end_inset
+
+.
+ Consequently only the main task will continue then the condition 
+\begin_inset Formula $Count(W1)=N$
+\end_inset
+
+ is true which indicates that all worker tasks have been initialized which
+ is the precondition for processing.
+ 
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+After all workers are available (
+\begin_inset Formula $Count(W1)=N$
+\end_inset
+
+) the main task sets the state to 
+\begin_inset Formula $State=Open$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Processing"
+
+\end_inset
+
+Processing
+\end_layout
+
+\begin_layout Standard
+Subject of the processing is to calculate one step of the iteration 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:recursion"
+
+\end_inset
+
+ by invoking 
+\begin_inset Formula $N$
+\end_inset
+
+ worker tasks which are processing 
+\begin_inset Formula $P$
+\end_inset
+
+ partitions 
+\begin_inset Formula $M_{j}\; j=1..P$
+\end_inset
+
+.
+
+\emph on
+ Precondition
+\emph default
+ is that all workers are available and the input data are Close, which means:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+State=Open\wedge Count(W1)=N
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Since we have 
+\begin_inset Formula $State=Starting$
+\end_inset
+
+, the guard W1 (
+\begin_inset Formula $State=Starting)$
+\end_inset
+
+ will be true and all worker tasks will wake up sequentially from Step 5.
+ If the last worker has been woken up, the state will be set to Close.
+ The 
+\emph on
+final Condition
+\emph default
+ after all partitions have been processed is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+State=Close\wedge Count(W2)=N
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Each worker calls the method 
+\begin_inset Formula $nextPartion$
+\end_inset
+
+ which is atomic and returns on each call a partition number indicating
+ the partition 
+\begin_inset Formula $M_{j}$
+\end_inset
+
+ to be processes.
+ After selecting the partition in step 6, the worker does the actual computing
+ of 
+\begin_inset Formula $H_{j}$
+\end_inset
+
+for the selected partition at step 7.
+ After the computation is done the worker will try to select a new partition
+ at step 6 by calling 
+\begin_inset Formula $nextPartition$
+\end_inset
+
+.
+ If the 
+\begin_inset Formula $nextParition()$
+\end_inset
+
+ methods indicates that no more partitions are available the work done for
+ this worker and the worker will go to step 2 waiting for 
+\begin_inset Formula $W2\;(State=Starting)$
+\end_inset
+
+ become true.
+ The computation is complete if there is no more partitions to be processed
+ which leads to the fact that all workers are will end up waiting for W2,
+ which in turn means 
+\begin_inset Formula $Count(W2)=N$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+final Condition
+\emph default
+ after all partitions have been processed is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+State=Close\wedge Count(W2)=N
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+After the Open condition 
+\begin_inset Formula $State=Starting$
+\end_inset
+
+ has been set all tasks 
+\begin_inset Formula $T_{j}\; j=1..N$
+\end_inset
+
+ waiting on W1 will wake up.
+ At any time we can fix a sequence 
+\begin_inset Formula $\{s_{k}\}_{k=1..N}$
+\end_inset
+
+ in such a way that the order in 
+\begin_inset Formula $\{T_{s_{1}},..,T_{s_{N}}\}$
+\end_inset
+
+ reflects the execution progress.
+ As a generalization we assume that 
+\begin_inset Formula $C$
+\end_inset
+
+ workers have not yet left there Open position, which means 
+\begin_inset Formula $Count(W1)=C$
+\end_inset
+
+ for 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $\{T_{s_{1}},..,T_{s_{C}},...,T_{s_{N}}\}$
+\end_inset
+
+.
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\bar default
+\strikeout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ In order to describe the behavior we need to distinguish between the 
+\begin_inset Formula $C=0$
+\end_inset
+
+ and 
+\begin_inset Formula $C>0$
+\end_inset
+
+.
+ In case 
+\begin_inset Formula $C=0$
+\end_inset
+
+ which is identical with 
+\begin_inset Formula $State=Close$
+\end_inset
+
+ the worker Task 
+\begin_inset Formula $T_{s_{N}}$
+\end_inset
+
+will wait for the guard W1 (
+\begin_inset Formula $State=Open$
+\end_inset
+
+) for the next step of the iteration.
+ In case 
+\begin_inset Formula $C>0$
+\end_inset
+
+ the will be 
+\begin_inset Formula $State=Open$
+\end_inset
+
+ which means the Task 
+\begin_inset Formula $T_{s_{N}}$
+\end_inset
+
+will not block on W1 and it will try to fetch some partition to process.
+ The contract of nextPartition says if there is no partition any more available
+ nextPartition returns 0 and the worker task shall wait for the next iteration.
+\end_layout
+
+\begin_layout Subsection
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Postprocessing"
+
+\end_inset
+
+Post processing
+\end_layout
+
+\begin_layout Standard
+Precondition for the post processing is that all result sets 
+\begin_inset Formula $X_{j}$
+\end_inset
+
+ have been computed, which means the following needs to be true.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+State=Close\wedge Count(W2)=N\label{eq:postprocessing}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This conditions the allows the main task to create a result set 
+\begin_inset Formula $X=\cup X_{j}$
+\end_inset
+
+ for the partial results and to begin the next iteration with the result
+ 
+\begin_inset Formula $X$
+\end_inset
+
+ as input.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\noun on
+Initialization
+\noun default
+:
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features tabularvalignment="middle">
+<column alignment="left" valignment="top" width="0pt">
+<column alignment="left" valignment="top" width="70col%">
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Precondition
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+None
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Invariant
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+None
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Postcondition
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $State=Open$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+Partitions
+\begin_inset Formula $\text{\left\{  X_{j}(t)\right\}  }j=1..P$
+\end_inset
+
+ defined
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\noun on
+Processing
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features tabularvalignment="middle">
+<column alignment="left" valignment="top" width="0pt">
+<column alignment="left" valignment="top" width="70col%">
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Precondition
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $State=Open$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Invariant
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $M=\cup M_{j}\; j=1..P$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Postcondition
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $(State=Close)\wedge(Count(W1)=N)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\noun on
+Postprocessing
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features tabularvalignment="middle">
+<column alignment="left" valignment="top" width="0">
+<column alignment="left" valignment="top" width="70col%">
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Precondition
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $(State=Close)\wedge(Count(W1)=N)$
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Invariant
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $M=\cup M_{j}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Formula $(State=Ready)\wedge(Count(W1)=N)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Postcondition
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $X(t+1)=\cup X_{j}(t)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Summary-of-steps"
+
+\end_inset
+
+Summary of the pre and post conditions for all three steps 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Proof"
+
+\end_inset
+
+Formal verification
+\end_layout
+
+\begin_layout Standard
+The transition system we are using for verification of the algorithm 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "alg:Collaboration-Algorithm"
+
+\end_inset
+
+ is shown in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Mode-State-Diagram"
+
+\end_inset
+
+.
+ It is straight forward derived from table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Summary-of-steps"
+
+\end_inset
+
+.
+ Each state contains the predicates listed in table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Predicates-of-model"
+
+\end_inset
+
+which are true in this state.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="7" columns="3">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Predicate
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Description
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+p
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Partitions 
+\begin_inset Formula $M_{j}$
+\end_inset
+
+ are available
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+G(x)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $State=x$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+q
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $IdleWorkers<N$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+r
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $IdleWorkers=N$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+s
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $X_{i}$
+\end_inset
+
+ available
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+m
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Main Task is active
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Predicates-of-model"
+
+\end_inset
+
+Predicates being used in the formal model
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Colaboration_State.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Mode-State-Diagram"
+
+\end_inset
+
+Transition System used for formal verification of the Collaboration package.
+ In each state the valid predicates are listed in the lower part of the
+ state boxes.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The state diagram in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Mode-State-Diagram"
+
+\end_inset
+
+ summarizes the behavior of the algorithm 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "alg:Collaboration-Algorithm"
+
+\end_inset
+
+.
+ A transition system 
+\begin_inset Formula $\mathrm{T}$
+\end_inset
+
+ is a tuple 
+\begin_inset Formula $\mathrm{(}S,\longrightarrow,L$
+\end_inset
+
+), where 
+\begin_inset Formula $S$
+\end_inset
+
+ are the states, 
+\begin_inset Formula $\longrightarrow$
+\end_inset
+
+is a relations describing the allowed state transitions and a labeling function
+ which returns propositional letters for any state.
+ Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:States-and-Transitions"
+
+\end_inset
+
+ summarizes the transitional system and it links to the chapters in the
+ paper where 
+\begin_inset Formula $L$
+\end_inset
+
+ is justified.
+ Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Predicates-of-model"
+
+\end_inset
+
+ is summing up the different predicates which are being used in the transition
+ system.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="5">
+<features tabularvalignment="middle">
+<column alignment="left" valignment="top" width="0pt">
+<column alignment="left" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0pt">
+<column alignment="left" valignment="top" width="0pt">
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+State
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\longrightarrow$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $L$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Justification
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Comments
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+S_Initialize
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+S_Starting
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $m,p,r,G(Close)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Initialization"
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+S_Starting
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+S_Processing
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $p,q,G(Open)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Processing"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+S_Processing
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+S_Postprocessing
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $p,q,G(Close)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Processing"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+S_Postprocessing
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+S_End
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $m,p,r,s,G(Close)$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Postprocessing"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:States-and-Transitions"
+
+\end_inset
+
+States, Transitions and Labeling function 
+\begin_inset Formula $L(State)$
+\end_inset
+
+.
+ The contents of the column 
+\begin_inset Formula $L$
+\end_inset
+
+ is described in table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Predicates-of-model"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The requirement to be verified against this model is that there exists a
+ path in the transition system which yields finally a running main task
+ and the computation result.
+ With the notation of 
+\begin_inset Formula $CTL^{*}$
+\end_inset
+
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "huth"
+
+\end_inset
+
+we can write 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+p\Longrightarrow EF(s\wedge m)\label{eq:ctl-req-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Since we have only one path to consider the 
+\begin_inset Formula $CTL^{*}$
+\end_inset
+
+ notation can be replaced by 
+\begin_inset Formula $LTL$
+\end_inset
+
+ notation; which means the quantor over the execution paths can be droped
+ from 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:ctl-req-1"
+
+\end_inset
+
+ 
+\begin_inset Formula 
+\begin{equation}
+p\Longrightarrow F(s\wedge m)\label{eq:ltl-req-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For the state 
+\emph on
+S_Postprocessing 
+\emph default
+the formula 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:ltl-req-1"
+
+\end_inset
+
+ holds.
+ As demonstrated in table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Summary-of-steps"
+
+\end_inset
+
+ the transition from 
+\begin_inset Formula $Initialize\longrightarrow Starting\longrightarrow Processing\longrightarrow Processing$
+\end_inset
+
+ will happen always since post and precondition are matching.
+\end_layout
+
+\begin_layout Section
+Mapping between the Model and Ada
+\end_layout
+
+\begin_layout Standard
+The Ada 95 implementation comprises of two packages (see figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Classes"
+
+\end_inset
+
+); one which implements the basic synchronization between the main task
+ and the worker task, called Collaboration, and a package which provides
+ the logic to logic to compute on the recipe which is called Partitioned_Workpac
+kage.
+ The usage of the Collaboration package from the main task view is shown
+ in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:ThreadFlow"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+The main task is calling the Fork method which causes the worker tasks to
+ process the available partitions.
+ The method Join is called by the main task to indicate that he is joining
+ the collaboration as well in the role of the task which needs to be informed
+ when all partitions have been processed.
+ The main task is put to sleep until the workers have completed there work.
+ After all workers have completed main task becomes active again and can
+ combine the computing results of the worker tasks into one result data
+ set.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Colaboration_Flow.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:ThreadFlow"
+
+\end_inset
+
+This figure shows a sequence diagram showing the inter working between applicati
+on and worker task.
+ The synchronization object is implemented as protected type using entries
+ with guard conditions.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Initialization
+\end_layout
+
+\begin_layout Standard
+The state is implemented as an Ada variable of type State_Type (Listing
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Internal-States"
+
+\end_inset
+
+) having three values:
+\end_layout
+
+\begin_layout Itemize
+S_Close - All processed have been started
+\end_layout
+
+\begin_layout Itemize
+S_Open - Worker tasks are in the process of being started.
+ From Open the collaboration may change to the state S_Close.
+\end_layout
+
+\begin_layout Itemize
+S_Shutdown - Tear down the complete collaboration
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+type State_Type is ( 
+\end_layout
+
+\begin_layout Plain Layout
+
+   S_Close, 
+\end_layout
+
+\begin_layout Plain Layout
+
+   S_Open, 
+\end_layout
+
+\begin_layout Plain Layout
+
+   S_Shutdown );
+\end_layout
+
+\begin_layout Plain Layout
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Internal-States"
+
+\end_inset
+
+Internal States of the Collaboration
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The initialization which is described in chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Initialization"
+
+\end_inset
+
+ is implemented using the initializations of variables as shown in listing
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Initialization-of-State"
+
+\end_inset
+
+.
+ The usage of enumerations makes the code more stable during maintenance
+ phase.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+protected type Gate_Type( Size : Positive ) is
+\end_layout
+
+\begin_layout Plain Layout
+
+    ............
+\end_layout
+
+\begin_layout Plain Layout
+
+private
+\end_layout
+
+\begin_layout Plain Layout
+
+   State  : State_Type  := S_Close;  
+\end_layout
+
+\begin_layout Plain Layout
+
+end Gate_Type;
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Initialization-of-State"
+
+\end_inset
+
+Initialization of the State Variable
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The state variable is private to a protected type called Gate_Type in order
+ to make state changes non interpretable by other tasks.
+\end_layout
+
+\begin_layout Subsection
+Processing
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+wait/wakeup
+\emph default
+ construct (
+\series bold
+Worker Step 2, Main Task Step 1,5
+\series default
+) is implemented by means of a so called entry as shown in 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Implementation-step3"
+
+\end_inset
+
+.
+ A task calling such an entry while the guard condition is not true will
+ block until the guard condition is true.
+ As shown in listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Initialization-of-State"
+
+\end_inset
+
+ the statement 
+\begin_inset Quotes eld
+\end_inset
+
+if nbr_waiting_workers = 0 ....
+\begin_inset Quotes erd
+\end_inset
+
+ contains two statements which have to be executed in an atomic way in order
+ to avoid race conditions.
+ Ada 95 provides protected types for this purpose.
+ Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Implementation-step3"
+
+\end_inset
+
+ shows the corresponding implementation.
+ Important is that the inner code is executed only by one task, which ensuring
+ that only the last waiting is executing the state transition to S_Close.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+entry Join_Unit when State = S_Open is
+\end_layout
+
+\begin_layout Plain Layout
+
+begin
+\end_layout
+
+\begin_layout Plain Layout
+
+  if Join_Unit'Count = 0 then
+\end_layout
+
+\begin_layout Plain Layout
+
+    State := S_Close;
+\end_layout
+
+\begin_layout Plain Layout
+
+  end if;
+\end_layout
+
+\begin_layout Plain Layout
+
+end Join_Unit;
+\end_layout
+
+\begin_layout Plain Layout
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Implementation-step3"
+
+\end_inset
+
+Implementation of step 3
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Worker/Step 7
+\series default
+ - The implementation of tasks is rather straight forward.
+ In order to model Step 7 an abstract type Context_Type has been defined
+ (see figure
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Classes"
+
+\end_inset
+
+).
+ The implementation of this type provides the methods Fetch and compute.
+ Fetch is responsible of allocating a work package (partition) for the task
+ calling the fetch method.
+ The function compute contains the complete computation for the given partition.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+task body Computing_Task is
+\end_layout
+
+\begin_layout Plain Layout
+
+  ...
+\end_layout
+
+\begin_layout Plain Layout
+
+begin       
+\end_layout
+
+\begin_layout Plain Layout
+
+  loop
+\end_layout
+
+\begin_layout Plain Layout
+
+    Join(B);
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+    loop
+\end_layout
+
+\begin_layout Plain Layout
+
+       P := Fetch( Current.all );
+\end_layout
+
+\begin_layout Plain Layout
+
+       exit when P = Last_Partition;
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+       Compute( Current.all, P );
+\end_layout
+
+\begin_layout Plain Layout
+
+    end loop;
+\end_layout
+
+\begin_layout Plain Layout
+
+  end loop;    
+\end_layout
+
+\begin_layout Plain Layout
+
+exception    
+\end_layout
+
+\begin_layout Plain Layout
+
+  ..............
+\end_layout
+
+\begin_layout Plain Layout
+
+end;
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Worker_Task_Structure"
+
+\end_inset
+
+Structure of the worker task
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+During start up a fixed number of worker tasks are started.
+ The method Join in Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Worker_Task_Structure"
+
+\end_inset
+
+ calls the Join_Unit method shown in Listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Implementation-step3"
+
+\end_inset
+
+.
+ It returns only after the start condition of step 6 has been set by the
+ main task.
+\end_layout
+
+\begin_layout Section
+The API from a programmers perspective
+\end_layout
+
+\begin_layout Standard
+The programmer is not exposed to the algorithm depicted in chapter 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:The-Algorithm"
+
+\end_inset
+
+ but only to the API which uses the collaboration metaphor.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:ThreadFlow"
+
+\end_inset
+
+ shows the invocation of the Collaboration API methods in case the user
+ does not use the Partitioned_Workpackage abstraction.
+ Besides of providing a minimal execution logic (see listing 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "lis:Computation-logic"
+
+\end_inset
+
+) the user has to implement the abstract data type Context.Object_Type.
+ This abstract data type requires four methods:
+\end_layout
+
+\begin_layout Itemize
+Partitioning 
+\end_layout
+
+\begin_layout Itemize
+Fetch
+\end_layout
+
+\begin_layout Itemize
+Compute 
+\end_layout
+
+\begin_layout Itemize
+Combine
+\end_layout
+
+\begin_layout Standard
+The method Partitioning is expected to setup the partitioning algorithm
+ which is provided by the Fetch method.
+ The Fetch method returns on each call a partition identifier as a number
+ until no more partitions available for processing.
+ The method Compute is taking the partition identifier as input and performs
+ the computation.
+ Combine is expected to merge all computation results into one result set.
+ The user of the API implements the computation only once for a single computati
+on which does not depend on the number of workers.
+ The only methods which are scaling dependent is the Partitioning method.
+ The Partitioned_Workpackage provides a method Compute which executes a
+ given number of iterations invoking the implementations provided by the
+ Context_Type.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+declare
+\end_layout
+
+\begin_layout Plain Layout
+
+   C : Computation.Handle := new Computation.Object_Type;
+\end_layout
+
+\begin_layout Plain Layout
+
+   P : Partitioned_Workpackage.Object_Type();
+\end_layout
+
+\begin_layout Plain Layout
+
+begin       
+\end_layout
+
+\begin_layout Plain Layout
+
+   C.X1 := new State_Vector_Type(1..N);
+\end_layout
+
+\begin_layout Plain Layout
+
+   C.X2 := new State_Vector_Type(1..N);
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+   while Step < Max_Iterations loop
+\end_layout
+
+\begin_layout Plain Layout
+
+      Compute( P, Context.Handle(C), Report_Interval );
+\end_layout
+
+\begin_layout Plain Layout
+
+      ....
+\end_layout
+
+\begin_layout Plain Layout
+
+      Step := Step + Report_Interval;
+\end_layout
+
+\begin_layout Plain Layout
+
+   end loop;
+\end_layout
+
+\begin_layout Plain Layout
+
+end 
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Computation logic in the main task.
+ The Computation.Object_Type is an implementation of the Context_Type providing
+ the methods to compute a single partition.
+ Important is to know that this code does not depend on the number of parallel
+ workers.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "lis:Computation-logic"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Results
+\end_layout
+
+\begin_layout Standard
+A simple example which yields quite impressive results is the simulation
+ of of the non relativistic movement of particles using newtons law of movement.
+ Assume 
+\begin_inset Formula $N$
+\end_inset
+
+ particles having the coordinates 
+\begin_inset Formula $x_{i}$
+\end_inset
+
+and momentum 
+\begin_inset Formula $m_{i}v_{i}$
+\end_inset
+
+ (where 
+\begin_inset Formula $i=1..N).$
+\end_inset
+
+ The movement of all particles can be calculated by integrating the equation
+ below for given initial conditions 
+\begin_inset Formula $x_{i}(0)$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+m_{i}\frac{dv_{i}}{dt}\mid_{x(t)}=\sum_{j=1}^{N}F(x_{i}(t),x_{j}(t))\label{eq:newton-1-1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{equation}
+\frac{dx}{dt}=v
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the given example used for benchmarking the a Runge Kutta algorithm assuming
+ fixed time steps has been used.
+ Before integrating for each particle 
+\begin_inset Formula $i\in1..N$
+\end_inset
+
+ the interaction with all other particles has to be calculated.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:central"
+
+\end_inset
+
+ shows the 
+\begin_inset Formula $X$
+\end_inset
+
+ velocity of a particles with mass 
+\begin_inset Formula $M_{1}$
+\end_inset
+
+ moving along the 
+\begin_inset Formula $X$
+\end_inset
+
+ axis and colliding with a mass 
+\begin_inset Formula $M_{2}$
+\end_inset
+
+ where 
+\begin_inset Formula $M_{2}\ggg M_{1}$
+\end_inset
+
+.
+ The initial velocity 
+\begin_inset Formula $v_{x}$
+\end_inset
+
+ of the particle is constant until the collision happens.
+ After the collision the particle moves with 
+\begin_inset Formula $-v_{x}$
+\end_inset
+
+ which resembles the fact of impuls conservation.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement t
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename central.png
+	scale 60
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:central"
+
+\end_inset
+
+In ordrr 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The calculation time of the interaction depends on 
+\begin_inset Formula $N^{2}$
+\end_inset
+
+ and the integration time on 
+\begin_inset Formula $N.$
+\end_inset
+
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:speedup"
+
+\end_inset
+
+ shows the execution time for different number of particles.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename speedup.png
+	scale 55
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:speedup"
+
+\end_inset
+
+This figure shoes the execution time of the integration of the equation
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:newton-1-1"
+
+\end_inset
+
+ depending on the number of particles and the number of worker processes.
+ The green line represents the sequential execution.
+ The gray line is an proximiation to the execution time of the sequential
+ algorithm using 
+\begin_inset Formula $C\, log(N^{2})$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+One can see that the quadratic dependency is demonating for large number
+ of particles.
+ Interestingly there is a point where the exection time starts to deviate
+ from the 
+\begin_inset Formula $N^{2}$
+\end_inset
+
+rule.
+\end_layout
+
+\begin_layout Section
+\start_of_appendix
+Appendix
+\end_layout
+
+\begin_layout Subsection
+Class Structure
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide true
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Colaboration_Classes.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Classes"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+-----------------
+\end_layout
+
+\begin_layout Bibliography
+\labelwidthstring References
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "huth"
+
+\end_inset
+
+Michael R.
+ A.
+ Huth Mark D.
+ Ryan 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+newblock
+\end_layout
+
+\end_inset
+
+ Logic in Computer Science: Modeling and Reasoning about Systems.
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+newblock
+\end_layout
+
+\end_inset
+
+ Cambridge University Press, 2000.
+ ISBN 0521652006, 2002.
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+Reference parts have to be separated by 
+\series bold
+
+\backslash
+newblock
+\series default
+.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\labelwidthstring References
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "appel01:fpcc"
+
+\end_inset
+
+Andrew
+\begin_inset space ~
+\end_inset
+
+W.
+ Appel.
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+newblock
+\end_layout
+
+\end_inset
+
+ Foundational proof-carrying code.
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+newblock
+\end_layout
+
+\end_inset
+
+ In 
+\emph on
+Symposium on Logic in Computer Science (LICS ’01)
+\emph default
+, pages 247--258.
+ IEEE, 2001.
+\end_layout
+
+\begin_layout Bibliography
+\labelwidthstring References
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "3"
+key "CTL01"
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Bibliography
+\labelwidthstring References
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

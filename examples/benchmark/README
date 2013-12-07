@@ -1,0 +1,30 @@
+The commands:
+
+$ ./runtest.sh particles 
+
+runs a benchmark for an algorithm by applying different number of partciles to it.
+After compiling the complete particles example, the output looks like this:
+
+
+Make Leaving directory `/import/merdmann/MyData/Projects/Collaboration/examples/particles'
+800 ;  ; 0.033425028 ; 0.033423336 ; 16.733636000
+700 ;  ; 0.025724320 ; 0.025722404 ; 12.881136000
+600 ;  ; 0.018911170 ; 0.018909962 ; 9.471636000
+500 ;  ; 0.013230192 ; 0.013228532 ; 6.628822000
+400 ;  ; 0.008503158 ; 0.008502132 ; 4.262536000
+300 ;  ; 0.004869504 ; 0.004867878 ; 2.443218000
+200 ;  ; 0.002250622 ; 0.002249614 ; 1.131153000
+100 ;  ; 0.000698526 ; 0.000697384 ; 0.352386000
+90 ;  ; 0.000590228 ; 0.000588778 ; 0.298138000
+80 ;  ; 0.000506928 ; 0.000505214 ; 0.256241000
+70 ;  ; 0.000415858 ; 0.000414124 ; 0.210455000
+60 ;  ; 0.000330542 ; 0.000329318 ; 0.167666000
+50 ;  ; 0.000273674 ; 0.000272542 ; 0.138834000
+40 ;  ; 0.000222994 ; 0.000221798 ; 0.113493000
+30 ;  ; 0.000181144 ; 0.000180158 ; 0.092471000
+20 ;  ; 0.000144404 ; 0.000143536 ; 0.073608000
+10 ;  ; 0.000153626 ; 0.000152332 ; 0.077614000
+
+The first column contains the number of paticles and the last column the total execution
+time in seconds.
+

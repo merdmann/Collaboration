@@ -1,0 +1,31 @@
+Introduction
+============
+
+This directory contains a simple example for the integration of the newtons
+equation for a large number of interacting particles.
+
+The directory ./src contains the code of the computation and some glue
+components like the file particle.adb which contains the main procedure of the
+application. The drectory common contains code which is used but not related
+to the computation.
+
+
+What happens in this package can be written as:
+
+    X1(1..N) := Integration( X0 )
+
+    ater all done:
+    X0 := X1;
+
+a partition is a in this case X1(P) P in 1..N since all components of the 
+state vector X1 can be caculated indepdent of the others.
+
+The Integration is found in the package Compute (compute.adb, compute.ads). It
+is a simple runge kutta integration with fixed step width.
+
+This directory contains two test configuration; noncentral.cfg and
+central.cfg. Noncentral.cfg represents a non central collisions of two masses
+of sifferent masses. Central.cfg specifies the configuration for a central
+collision of equal masses. THe later case is being used to elaborate the
+accuracy of the simulation using the conservation law for momentum.
+

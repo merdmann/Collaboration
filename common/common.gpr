@@ -1,0 +1,12 @@
+project Common is
+
+   package Ide is
+      for Vcs_Kind use "Git";
+   end Ide;
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-gnat12");
+   end Compiler;
+
+end Common;
+
