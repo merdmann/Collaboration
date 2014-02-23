@@ -27,23 +27,23 @@ with Ada.Text_IO;          	use Ada.Text_IO;
 with Ada.Exceptions;		use Ada.Exceptions;
 with Unchecked_Deallocation;
 
-with Collaboration;              	use Collaboration;
+with Collaboration;             use Collaboration;
 with Log;			use Log;
 
 with Timers;			use Timers;
 with Time_Measurement;		use Time_Measurement;
 
-with Scheduling;			use Scheduling;
+with Scheduling;		use Scheduling;
 with System.Task_Info;		use System.Task_Info;
-with System.Multiprocessors;	use System.Multiprocessors;
+--with System.Multiprocessors;	use System.Multiprocessors;
 
 package body Partitioned_Workpackage is
 
    Nbr_Of_Threads : constant Positive := 2;
 
    task type Computing_Task(
-      Data : Object_Data_Access;
-      Id : CPU_Range ) with CPU => Id;
+      Data : Object_Data_Access );
+      -- CPU_Range : id) with CPU => Id;
 
    type Task_Handle is access Computing_Task;
    type Computing_Task_Array is array( Positive range <> ) of Task_Handle;
@@ -98,7 +98,8 @@ package body Partitioned_Workpackage is
        when E : others =>
          Trace(B, "Exception " & Exception_Name( E )
                & ":" &  Exception_Message( E )
-               & " in worker " & CPU_Range'Image(Id) );
+                 -- & " in worker " & CPU_Range'Image(Id)
+              );
    end;
 
    ----------------
@@ -114,7 +115,8 @@ package body Partitioned_Workpackage is
 
       Data := new Object_Data_Type(M);
       for i in 1..M loop
-         Data.H(i) := new Computing_Task(Data, CPU_Range(i));
+         --Data.H(i) := new Computing_Task(Data, CPU_Range(i));
+          Data.H(i) := new Computing_Task(Data);
       end loop;
 
       This.Data := Data;

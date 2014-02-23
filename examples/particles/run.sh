@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 # ************************************************************************ --
 # *****           P A R T I C L E  S I M U L A T O R  (PSim)         ***** --
 # *****               FOR  CLASSICAL PARTICLES                       ***** --
@@ -75,7 +75,7 @@ cp ${config}.cfg ${wd}
 cp ./bin/particle ${wd} 
 
 cd ${wd} 
-./particle ${config} ${log} ${with} | grep "P " | tee ${stdout}
+./particle ${config} ${log} ${with} | tee ${stdout}
 topv ${stdout} 1
 topv ${stdout} 2
 pwd

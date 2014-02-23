@@ -191,14 +191,13 @@ Introduction
 \end_layout
 
 \begin_layout Standard
-In order for an API being easy to use, it should be build on a few well
- known metaphors.
+In order for an API being easy to use, it should be build on a well known
+ metaphor.
  The Collaboration package presented here provides an API which allows the
- developer the application of multiple tasks based on the well known model
- of a group of workers working in parallel on a given task.
+ easy utilization of Multicore CPU's since it is based on the commonly known
+ model of a group of workers.
  Each worker is working independent of others on some part of the final
- product until he is finished.
- After all subresults are finished the final result assembled.
+ product which is assembled after all parts are produced.
 \end_layout
 
 \begin_layout Standard
@@ -280,7 +279,8 @@ reference "eq:recursion"
 \end_layout
 
 \begin_layout Standard
-The proposed API is based on the metaphor of a team of worker (Fig.
+The proposed API addresses this situation.
+ It is based on the metaphor of a team of worker (Fig.
  
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -291,8 +291,8 @@ reference "fig:Collaboration-Model"
 ), called a collaboration, sharing the work among them.
  Initially a collaboration is empty and as much worker as needed can join
  the collaboration.
- If there is no work available, whch means no computation recipe has been
- provided, the worker will wait until some work becomes available.
+ If there is no work available the worker will wait until some work becomes
+ available.
  The so called client will submit a recipe to the collaboration for processing.
  A recipe specifies the calculation formula and the algorithm to calculate
  the partition 
@@ -355,10 +355,6 @@ The Collaboration Model is based in the idea that some client passes a recipe
 
 \end_layout
 
-\begin_layout Section
-The API
-\end_layout
-
 \begin_layout Standard
 The Collaboration API follows the same model; a worker task needs to join
  a collaboration by calling the 
@@ -377,8 +373,7 @@ reference "lis:Collaboration-API"
 \emph on
 Join
 \emph default
- method will block until the computation recipe has been made available
- to the collaboation.
+ method will block until the recipe has been made available.
  The client will prepare the input data and calls the method 
 \emph on
 Fork
@@ -545,15 +540,6 @@ reference "sec:Introduction"
 \end_inset
 
  is depicted as step table in algorithm
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "alg:Collaboration-Algorithm"
-
-\end_inset
-
- or further elaboration..
- The intention of this chapter is to provide some reasoning abut the functioning
- of the implementation depicted in figure 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "alg:Collaboration-Algorithm"
@@ -1116,11 +1102,15 @@ reference "alg:Collaboration-Algorithm"
 
 \end_inset
 
- is representing an execution step.
- The columns are representing the different tasks involved in the model.
+ is representing an execution step and the columns are representing the
+ different tasks involved in the model.
  Each step may contain a statement which are either wait/wake up pairs or
  general instructions.
- Using a 
+ 
+\end_layout
+
+\begin_layout Standard
+Using a 
 \emph on
 wait/wakeup
 \emph default
@@ -1139,7 +1129,9 @@ wait/wakeup
 \emph on
  Count(C).
  
-\emph default
+\end_layout
+
+\begin_layout Standard
 The term 
 \emph on
 SET
@@ -1169,8 +1161,8 @@ reference "alg:Collaboration-Algorithm"
 \end_inset
 
  has to be done with certain care.
- since there are statements in the same row for different tasks.
- Such statemente are not executed in a reproducible order, e.g.
+ Statements listed in the same row for different tasks are not executed
+ in a reproducible order, e.g.
  in step 5 the 
 \emph on
 wait(W2)
@@ -1180,9 +1172,9 @@ wait(W2)
 wakeup(W1)
 \emph default
  can happen in any order.
- Even though the presenation is some what missleading, for time being we
- will continue using the presentation in order to show important features
- of the collaboration algorithm.
+ Even though the presenation is not correct, for time being we will continue
+ using the presentation in order to show important features of the collaboration
+ algorithm.
 \end_layout
 
 \begin_layout Standard

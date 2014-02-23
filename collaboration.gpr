@@ -1,9 +1,10 @@
+with "machdep.gpr";
 with "common/common.gpr";
 
 project Collaboration is
 
-   for Languages use ("Ada", "C" );
-   for Source_Dirs use ("src", "linux");
+   for Languages use ("Ada");
+   for Source_Dirs use ("src");
    for Library_Name use "collaboration";
    for Library_Dir use "lib";
    for Library_Ali_Dir use "lib";

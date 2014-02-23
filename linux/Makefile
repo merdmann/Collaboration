@@ -1,4 +1,4 @@
-rundir=../
+rundir=..
 
 ## internal stuff
 arch=$(shell uname -p)
@@ -16,12 +16,17 @@ all :: $(libdir) $(lib)
 $(libdir) :
 	$(MAKE) -C ../ dirs
 
-$(lib) : set_scheduling.o
+scheduling.o : scheduling.ads
+	gnatmake -c scheduling.ads
+
+$(lib) : set_scheduling.o scheduling.o
 	ar crvf $(lib)	set_scheduling.o
 	ranlib $(lib)
+	cp *.ads *.ali $(libdir)
+
 
 clean ::
 	rm -rf *.o $(lib)
 
 distclean ::  clean
-
+	rm -rf *.ali
