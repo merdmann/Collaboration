@@ -1,12 +1,12 @@
 PATH:=/opt/gnat/bin:${PATH}
-#libs=-L../../lib -lmachdep
+
 stdout=./central.log
 wd=$(shell pwd)
 config=central
 
 all : dirs
 	$(MAKE) -C ../../ all  	
-	gnatmake -P./schroedinger.gpr ## -largs $(libs)
+	gnatmake -P./schroedinger.gpr 
 
 dirs : ./build ./bin $(resultdir)
 	$(MAKE) -C../../ dirs

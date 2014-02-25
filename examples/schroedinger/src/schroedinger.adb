@@ -118,11 +118,12 @@ begin
    Log.Comment("Max_Iterations=" & Natural'Image(Max_Iterations));
 
    declare
-      C : Computation.Handle := new Computation.Object_Type(N);
-      P : Partitioned_Workpackage.Object_Type(Config.Workers);
+      NN : constant Natural := N**3;
+      C  : Computation.Handle := new Computation.Object_Type(NN);
+      P  : Partitioned_Workpackage.Object_Type(Config.Workers);
    begin
-      C.X1 := new State_Vector_Type(1..N);
-      C.X2 := new State_Vector_Type(1..N);
+      C.X1 := new State_Vector_Type(1..NN);
+      C.X2 := new State_Vector_Type(1..NN);
 
       Dump_State( T, C.X1 );
 

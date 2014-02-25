@@ -20,7 +20,7 @@ scheduling.o : scheduling.ads
 	gnatmake -c scheduling.ads
 
 $(lib) : set_scheduling.o scheduling.o
-	ar crvf $(lib)	set_scheduling.o
+	ar crvf $(lib)	set_scheduling.o scheduling.o
 	ranlib $(lib)
 	cp *.ads *.ali $(libdir)
 

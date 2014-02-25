@@ -13,7 +13,7 @@ RM=rm -rf
 MKDIR=mkdir -p
 
 ## default target
-all : dirs $(os)-1
+all : dirs $(os)
 	gnatmake -P./collaboration.gpr
 
 ## work directories
@@ -23,11 +23,11 @@ dirs : ./lib ./build ./bin
 	$(MKDIR) $@
 
 ## os dependand stuff
-Linux-1:
-	$(MAKE) Linux=Yes -C./linux
+Linux:
+	$(MAKE) Linux=Yes -C./machdeps
 
 CYGWIN_NT-6.2 Windows_NT :
-	$(MAKE) -C./linux
+	$(MAKE) -C./machdeps
 
 
 ## build distribution
@@ -43,7 +43,7 @@ dist : distclean $(ws)
 
 ## cleanup
 clean distclean :: 
-	$(MAKE) -C./linux $@
+	$(MAKE) -C./machdeps $@
 	$(MAKE) -C./examples/particles $@
 
 

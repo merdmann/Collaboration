@@ -39,6 +39,8 @@ with Ada.Numerics.Generic_Elementary_Functions;
 with Ada.Numerics.Generic_Complex_Types;
 with Ada.Numerics.Generic_Complex_Elementary_Functions;
 
+with Coordinates;			use Coordinates;
+
 package body Computation is
    package Complex_Functions is new
      Ada.Numerics.Generic_Complex_Elementary_Functions (Types.Complex_Types);
@@ -53,12 +55,13 @@ package body Computation is
    -- Compute --
    -------------
    procedure Compute( This : in out Object_Type; I : in Natural ) is
-
-      X1 : Value_Type := Value_Type(I mod N) * DX;
-      X2 : Value_Type := Value_Type(Integer(I / N)) * DX;
-      X3 : Value_Type := Value_Type(Integer(I / N**2))* DX;
+      X0,Y0,Z0 : Natural;
+      DP : Complex;
    begin
       Pragma Debug( Put_Line( Integer'Image(I) ) );
+
+      To_Coordinate(I, X0, Y0, Z0);
+
 
       Pragma Debug( Start_Lap( T_Integration ) );
 
